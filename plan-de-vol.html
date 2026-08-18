@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan de vol — Prise de masse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#101317;
+    --panel:#171c22;
+    --panel-2:#1e2530;
+    --line:#2a323d;
+    --text:#eae7de;
+    --text-dim:#8b94a3;
+    --amber:#ffb020;
+    --amber-dim:#8a5f16;
+    --cyan:#4fd1c5;
+    --cyan-dim:#245852;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #1a2029 0%, var(--bg) 60%);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .display{font-family:'Space Grotesk',sans-serif;}
+
+  /* ===== HEADER ===== */
+  header{
+    padding:28px 20px 18px;
+    border-bottom:1px solid var(--line);
+    position:sticky;
+    top:0;
+    background:rgba(16,19,23,0.92);
+    backdrop-filter:blur(10px);
+    z-index:50;
+  }
+  .header-inner{max-width:900px;margin:0 auto;}
+  .callsign{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.18em;
+    color:var(--amber);
+    text-transform:uppercase;
+    margin-bottom:6px;
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:clamp(22px,5vw,32px);
+    margin:0 0 4px;
+    letter-spacing:-0.01em;
+  }
+  .sub{
+    color:var(--text-dim);
+    font-size:13px;
+    font-family:'JetBrains Mono',monospace;
+  }
+
+  /* ===== WEEK TABS ===== */
+  .week-tabs{
+    display:flex;
+    gap:8px;
+    max-width:900px;
+    margin:18px auto 0;
+    padding:0 20px 0;
+    overflow-x:auto;
+  }
+  .week-tab{
+    flex:1;
+    min-width:130px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:10px 12px;
+    cursor:pointer;
+    text-align:left;
+    transition:border-color .2s, background .2s;
+  }
+  .week-tab:hover{border-color:#3a4552;}
+  .week-tab.active{
+    border-color:var(--amber);
+    background:linear-gradient(180deg, rgba(255,176,32,0.08), rgba(255,176,32,0.02));
+  }
+  .week-tab .wk-num{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    color:var(--text-dim);
+    letter-spacing:0.1em;
+  }
+  .week-tab.active .wk-num{color:var(--amber);}
+  .week-tab .wk-label{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;
+    font-size:13.5px;
+    margin-top:2px;
+  }
+
+  main{max-width:900px;margin:0 auto;padding:22px 20px 80px;}
+
+  /* ===== INSTRUMENT PANEL ===== */
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:18px;
+    margin-bottom:22px;
+    display:flex;
+    align-items:center;
+    gap:22px;
+    flex-wrap:wrap;
+  }
+  .gauge-wrap{flex:0 0 auto;}
+  .gauge-readout{flex:1;min-width:180px;}
+  .readout-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding:6px 0;
+    border-bottom:1px dashed var(--line);
+  }
+  .readout-row:last-child{border-bottom:none;}
+  .readout-label{
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+  }
+  .readout-value{
+    font-family:'JetBrains Mono',monospace;
+    font-weight:700;
+    font-size:19px;
+    color:var(--amber);
+  }
+  .readout-value.cyan{color:var(--cyan);}
+
+  /* ===== DAY TABS ===== */
+  .day-tabs{
+    display:flex;
+    gap:6px;
+    overflow-x:auto;
+    padding-bottom:4px;
+    margin-bottom:22px;
+  }
+  .day-tab{
+    flex:0 0 auto;
+    background:var(--panel);
+    border:1px solid var(--line);
+    color:var(--text-dim);
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.08em;
+    padding:9px 14px;
+    border-radius:8px;
+    cursor:pointer;
+    transition:all .15s;
+  }
+  .day-tab:hover{color:var(--text);}
+  .day-tab.active{
+    background:var(--amber);
+    border-color:var(--amber);
+    color:#1a1305;
+    font-weight:700;
+  }
+
+  /* ===== MEAL CARDS ===== */
+  .day-title{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:20px;
+    font-weight:700;
+    margin:0 0 16px;
+  }
+  .meal{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    margin-bottom:12px;
+    overflow:hidden;
+  }
+  .meal-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px 16px;
+    background:var(--panel-2);
+    border-bottom:1px solid var(--line);
+  }
+  .meal-name{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .meal-icon{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--amber);
+    flex:0 0 auto;
+  }
+  .meal-time{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--text-dim);
+  }
+  .meal-items{padding:6px 16px 10px;}
+  .item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:8px 0;
+    border-bottom:1px solid var(--line);
+    font-size:14px;
+  }
+  .item:last-child{border-bottom:none;}
+  .item-name{color:var(--text);}
+  .item-qty{
+    font-family:'JetBrains Mono',monospace;
+    color:var(--cyan);
+    font-size:13px;
+    white-space:nowrap;
+    margin-left:12px;
+  }
+
+  footer{
+    text-align:center;
+    color:var(--text-dim);
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    padding:20px;
+    letter-spacing:0.05em;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="callsign">PLAN DE VOL · PIERRE · 183-184CM</div>
+    <h1>Prise de masse — Carnet de bord</h1>
+    <div class="sub">Objectif : ~66-67 kg → montée en puissance sur 4 semaines · ~140-150g protéines/j</div>
+  </div>
+  <div class="week-tabs" id="weekTabs"></div>
+</header>
+
+<main>
+  <div class="panel">
+    <div class="gauge-wrap">
+      <svg id="gauge" width="120" height="80" viewBox="0 0 120 80">
+        <path d="M10,70 A50,50 0 0,1 110,70" fill="none" stroke="#2a323d" stroke-width="8" stroke-linecap="round"/>
+        <path id="gaugeArc" d="M10,70 A50,50 0 0,1 110,70" fill="none" stroke="#ffb020" stroke-width="8" stroke-linecap="round" stroke-dasharray="157" stroke-dashoffset="157"/>
+        <text x="60" y="60" text-anchor="middle" fill="#eae7de" font-family="JetBrains Mono" font-weight="700" font-size="16" id="gaugeText">0</text>
+        <text x="60" y="74" text-anchor="middle" fill="#8b94a3" font-family="JetBrains Mono" font-size="8">KCAL/J</text>
+      </svg>
+    </div>
+    <div class="gauge-readout">
+      <div class="readout-row">
+        <span class="readout-label">Objectif calorique</span>
+        <span class="readout-value mono" id="kcalTarget">—</span>
+      </div>
+      <div class="readout-row">
+        <span class="readout-label">Protéines cibles</span>
+        <span class="readout-value cyan mono" id="proteinTarget">—</span>
+      </div>
+      <div class="readout-row">
+        <span class="readout-label">Phase</span>
+        <span class="readout-value mono" id="phaseLabel" style="font-size:13px;">—</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="day-tabs" id="dayTabs"></div>
+
+  <h2 class="day-title" id="dayTitle">—</h2>
+  <div id="meals"></div>
+</main>
+
+<footer>PLAN GÉNÉRÉ POUR USAGE PERSONNEL · AJUSTER SELON PESÉE HEBDOMADAIRE</footer>
+
+<script>
+// ---------- DATA ----------
+const WEEKS = [
+  {num:1, label:"Mise en route", target:3200, protein:140, mult:1.0},
+  {num:2, label:"Stabilisation", target:3200, protein:145, mult:1.0},
+  {num:3, label:"Montée en puissance", target:3400, protein:150, mult:1.1},
+  {num:4, label:"Régime de croisière max", target:3500, protein:150, mult:1.2},
+];
+
+// item: [name, qty, unit, scalable(bool)]
+const DAYS = [
+  {
+    name:"Lundi",
+    meals:[
+      {label:"Matin", time:"07h30", items:[
+        ["Œufs (omelette)",3,"u",false],
+        ["Flocons d'avoine",80,"g",true],
+        ["Lait entier",250,"ml",true],
+        ["Banane",1,"u",false],
+        ["Pain complet",2,"tr.",false],
+        ["Beurre de cacahuète",20,"g",true],
+      ]},
+      {label:"Collation matin", time:"10h30", items:[
+        ["Yaourt grec",150,"g",true],
+        ["Miel",15,"g",true],
+        ["Amandes",20,"g",true],
+      ]},
+      {label:"Midi", time:"12h30", items:[
+        ["Poulet grillé",180,"g",true],
+        ["Riz cuit",220,"g",true],
+        ["Brocolis",200,"g",true],
+        ["Huile d'olive",10,"g",true],
+      ]},
+      {label:"Collation après-midi", time:"16h30", items:[
+        ["Fromage blanc",200,"g",true],
+        ["Granola",40,"g",true],
+      ]},
+      {label:"Soir", time:"19h30", items:[
+        ["Pâtes cuites",200,"g",true],
+        ["Bœuf haché 15%",150,"g",true],
+        ["Sauce tomate",150,"g",true],
+        ["Parmesan",20,"g",true],
+      ]},
+      {label:"Avant coucher", time:"22h00", items:[
+        ["Fromage blanc",150,"g",true],
+        ["Noix",15,"g",true],
+      ]},
+    ]
+  },
+  {
+    name:"Mardi",
+    meals:[
+      {label:"Matin", time:"07h30", items:[
+        ["Flocons d'avoine",80,"g",true],
+        ["Lait entier",250,"ml",true],
+        ["Miel",15,"g",true],
+        ["Noix",20,"g",true],
+        ["Œufs au plat",2,"u",false],
+      ]},
+      {label:"Collation matin", time:"10h30", items:[
+        ["Whey protéine",30,"g",true],
+        ["Lait entier",250,"ml",true],
+      ]},
+      {label:"Midi", time:"12h30", items:[
+        ["Steak haché",180,"g",true],
+        ["Pommes de terre vapeur",250,"g",true],
+        ["Haricots verts",150,"g",true],
+      ]},
+      {label:"Collation après-midi", time:"16h30", items:[
+        ["Barre protéinée",1,"u",false],
+        ["Pomme",150,"g",true],
+      ]},
+      {label:"Soir", time:"19h30", items:[
+        ["Saumon",180,"g",true],
+        ["Quinoa cuit",200,"g",true],
+        ["Courgettes sautées",150,"g",true],
+      ]},
+      {label:"Avant coucher", time:"22h00", items:[
+        ["Lait entier",250,"ml",true],
+        ["Noix",20,"g",true],
+      ]},
+    ]
+  },
+  {
+    name:"Mercredi",
+    meals:[
+      {label:"Matin", time:"07h30", items:[
+        ["Œufs (pancakes)",2,"u",false],
+        ["Flocons d'avoine",60,"g",true],
+        ["Banane",1,"u",false],
+        ["Fromage blanc",150,"g",true],
+      ]},
+      {label:"Collation matin", time:"10h30", items:[
+        ["Yaourt grec",150,"g",true],
+        ["Miel",15,"g",true],
+      ]},
+      {label:"Midi", time:"12h30", items:[
+        ["Dinde",180,"g",true],
+        ["Riz complet cuit",220,"g",true],
+        ["Carottes",150,"g",true],
+      ]},
+      {label:"Collation après-midi", time:"16h30", items:[
+        ["Pain complet",80,"g",true],
+        ["Poulet (sandwich)",100,"g",true],
+      ]},
+      {label:"Soir", time:"19h30", items:[
+        ["Bœuf haché 15%",150,"g",true],
+        ["Haricots rouges",150,"g",true],
+        ["Tomate/sauce",150,"g",true],
+        ["Pain complet",60,"g",true],
+      ]},
+      {label:"Avant coucher", time:"22h00", items:[
+        ["Fromage blanc",150,"g",true],
+      ]},
+    ]
+  },
+  {
+    name:"Jeudi",
+    meals:[
+      {label:"Matin", time:"07h30", items:[
+        ["Œufs (omelette)",3,"u",false],
+        ["Jambon",40,"g",true],
+        ["Fromage",30,"g",true],
+        ["Pain complet",60,"g",true],
+        ["Jus d'orange",200,"ml",true],
+      ]},
+      {label:"Collation matin", time:"10h30", items:[
+        ["Whey protéine",30,"g",true],
+        ["Banane",1,"u",false],
+      ]},
+      {label:"Midi", time:"12h30", items:[
+        ["Poisson blanc",180,"g",true],
+        ["Pâtes cuites",200,"g",true],
+        ["Épinards",150,"g",true],
+      ]},
+      {label:"Collation après-midi", time:"16h30", items:[
+        ["Fromage blanc",200,"g",true],
+        ["Granola",40,"g",true],
+      ]},
+      {label:"Soir", time:"19h30", items:[
+        ["Poulet (curry)",180,"g",true],
+        ["Riz basmati cuit",220,"g",true],
+        ["Lait de coco/sauce curry",100,"ml",true],
+      ]},
+      {label:"Avant coucher", time:"22h00", items:[
+        ["Amandes",25,"g",true],
+        ["Lait entier",200,"ml",true],
+      ]},
+    ]
+  },
+  {
+    name:"Vendredi",
+    meals:[
+      {label:"Matin", time:"07h30", items:[
+        ["Flocons d'avoine",80,"g",true],
+        ["Whey protéine",30,"g",true],
+        ["Fruits rouges",100,"g",true],
+        ["Lait entier",250,"ml",true],
+      ]},
+      {label:"Collation matin", time:"10h30", items:[
+        ["Yaourt grec",150,"g",true],
+        ["Miel",15,"g",true],
+      ]},
+      {label:"Midi", time:"12h30", items:[
+        ["Bœuf sauté",180,"g",true],
+        ["Nouilles cuites",200,"g",true],
+        ["Légumes wok",200,"g",true],
+      ]},
+      {label:"Collation après-midi", time:"16h30", items:[
+        ["Barre protéinée",1,"u",false],
+        ["Fruit de saison",150,"g",true],
+      ]},
+      {label:"Soir (repas plaisir)", time:"19h30", items:[
+        ["Pâte à pizza",200,"g",true],
+        ["Mozzarella",100,"g",true],
+        ["Jambon",60,"g",true],
+      ]},
+      {label:"Avant coucher", time:"22h00", items:[
+        ["Fromage blanc",150,"g",true],
+      ]},
+    ]
+  },
+  {
+    name:"Samedi",
+    meals:[
+      {label:"Matin", time:"08h30", items:[
+        ["Œufs brouillés",3,"u",false],
+        ["Avocat",0.5,"u",false],
+        ["Pain complet",60,"g",true],
+      ]},
+      {label:"Collation matin", time:"11h00", items:[
+        ["Whey protéine",30,"g",true],
+        ["Lait entier",250,"ml",true],
+      ]},
+      {label:"Midi", time:"13h00", items:[
+        ["Pain burger",90,"g",true],
+        ["Steak haché",150,"g",true],
+        ["Fromage",30,"g",true],
+        ["Frites au four",200,"g",true],
+      ]},
+      {label:"Collation après-midi", time:"17h00", items:[
+        ["Fromage blanc",200,"g",true],
+        ["Fruits secs",30,"g",true],
+      ]},
+      {label:"Soir", time:"20h00", items:[
+        ["Poulet rôti",200,"g",true],
+        ["Pommes de terre",250,"g",true],
+        ["Légumes grillés",200,"g",true],
+      ]},
+      {label:"Avant coucher", time:"22h30", items:[
+        ["Lait entier",250,"ml",true],
+        ["Noix",20,"g",true],
+      ]},
+    ]
+  },
+  {
+    name:"Dimanche",
+    meals:[
+      {label:"Matin", time:"08h30", items:[
+        ["Œufs (pancakes)",2,"u",false],
+        ["Flocons d'avoine",60,"g",true],
+        ["Whey protéine",20,"g",true],
+        ["Fruits de saison",150,"g",true],
+      ]},
+      {label:"Collation matin", time:"11h00", items:[
+        ["Yaourt grec",150,"g",true],
+        ["Miel",15,"g",true],
+      ]},
+      {label:"Midi", time:"13h00", items:[
+        ["Rôti bœuf/porc",200,"g",true],
+        ["Gratin dauphinois",250,"g",true],
+        ["Salade verte",100,"g",true],
+      ]},
+      {label:"Collation après-midi", time:"17h00", items:[
+        ["Fromage blanc",200,"g",true],
+        ["Granola",40,"g",true],
+      ]},
+      {label:"Soir", time:"20h00", items:[
+        ["Soupe de légumes",300,"ml",true],
+        ["Œufs",2,"u",false],
+        ["Pain complet",60,"g",true],
+        ["Fromage",30,"g",true],
+      ]},
+      {label:"Avant coucher", time:"22h30", items:[
+        ["Lait entier",200,"ml",true],
+        ["Amandes",20,"g",true],
+      ]},
+    ]
+  },
+];
+
+// ---------- STATE ----------
+let currentWeek = 0;
+let currentDay = 0;
+
+// ---------- RENDER ----------
+function roundTo5(n){ return Math.round(n/5)*5; }
+
+function scaledQty(qty, unit, scalable, mult){
+  if(!scalable) return qty;
+  if(unit==="g"||unit==="ml"){
+    const v = qty*mult;
+    return roundTo5(v);
+  }
+  return qty;
+}
+
+function renderWeekTabs(){
+  const wrap = document.getElementById('weekTabs');
+  wrap.innerHTML = '';
+  WEEKS.forEach((w,i)=>{
+    const el = document.createElement('div');
+    el.className = 'week-tab' + (i===currentWeek?' active':'');
+    el.innerHTML = `<div class="wk-num">SEM. 0${w.num}</div><div class="wk-label">${w.label}</div>`;
+    el.onclick = ()=>{ currentWeek=i; renderAll(); };
+    wrap.appendChild(el);
+  });
+}
+
+function renderDayTabs(){
+  const wrap = document.getElementById('dayTabs');
+  wrap.innerHTML = '';
+  DAYS.forEach((d,i)=>{
+    const el = document.createElement('div');
+    el.className = 'day-tab' + (i===currentDay?' active':'');
+    el.textContent = d.name.slice(0,3).toUpperCase();
+    el.onclick = ()=>{ currentDay=i; renderDay(); };
+    wrap.appendChild(el);
+  });
+}
+
+function renderGauge(){
+  const w = WEEKS[currentWeek];
+  document.getElementById('kcalTarget').textContent = `~${w.target} kcal`;
+  document.getElementById('proteinTarget').textContent = `~${w.protein} g`;
+  document.getElementById('phaseLabel').textContent = w.label;
+
+  // gauge arc: map target range 3000-3600 to 0-157 (arc length)
+  const min=3000, max=3600;
+  const frac = Math.max(0, Math.min(1, (w.target-min)/(max-min)));
+  const arcLen = 157;
+  const offset = arcLen - (arcLen*frac);
+  const arc = document.getElementById('gaugeArc');
+  arc.style.transition = 'stroke-dashoffset .6s ease';
+  arc.setAttribute('stroke-dashoffset', offset);
+  document.getElementById('gaugeText').textContent = w.target;
+}
+
+function renderDay(){
+  const w = WEEKS[currentWeek];
+  const d = DAYS[currentDay];
+  document.getElementById('dayTitle').textContent = `${d.name} — Semaine ${w.num}`;
+  const mealsWrap = document.getElementById('meals');
+  mealsWrap.innerHTML = '';
+  d.meals.forEach(meal=>{
+    const mealEl = document.createElement('div');
+    mealEl.className = 'meal';
+    const itemsHtml = meal.items.map(([name,qty,unit,scalable])=>{
+      const q = scaledQty(qty,unit,scalable,w.mult);
+      const qtyDisplay = (unit==="u") ? `× ${q}` : `${q}${unit}`;
+      return `<div class="item"><span class="item-name">${name}</span><span class="item-qty">${qtyDisplay}</span></div>`;
+    }).join('');
+    mealEl.innerHTML = `
+      <div class="meal-head">
+        <div class="meal-name"><span class="meal-icon"></span>${meal.label}</div>
+        <div class="meal-time mono">${meal.time}</div>
+      </div>
+      <div class="meal-items">${itemsHtml}</div>
+    `;
+    mealsWrap.appendChild(mealEl);
+  });
+  renderDayTabs();
+}
+
+function renderAll(){
+  renderWeekTabs();
+  renderGauge();
+  renderDay();
+}
+
+renderAll();
+</script>
+
+</body>
+</html>
